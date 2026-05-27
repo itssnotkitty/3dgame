@@ -1,0 +1,6 @@
+body { margin: 0; background: #202020; overflow: hidden; color: white; font-family: sans-serif; }
+#crosshair {
+    position: absolute; top: 50%; left: 50%; font-size: 30px;
+    transform: translate(-50%, -50%); pointer-events: none;
+}
+#msg { position: absolute; top: 10px; width: 100%; text-align: center; }

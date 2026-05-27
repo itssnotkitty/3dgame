@@ -10,26 +10,47 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // Fények
-scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(5, 10, 5);
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const light = new THREE.DirectionalLight(0xffffff, 0.8);
+light.position.set(10, 20, 10);
 scene.add(light);
 
+// 1 = FAL, 0 = ÜRES ÚT
+const levelMap = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 1, 0, 1, 1, 1, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+    [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+];
+
+// Pálya építése
+function buildMap() {
+    for (let i = 0; i < levelMap.length; i++) {
+        for (let j = 0; j < levelMap[i].length; j++) {
+            if (levelMap[i][j] === 1) {
+                const wall = new THREE.Mesh(
+                    new THREE.BoxGeometry(2, 2, 2), 
+                    new THREE.MeshPhongMaterial({ color: 0x4a4a4a })
+                );
+                wall.position.set(j * 2, 1, i * 2);
+                scene.add(wall);
+            }
+        }
+    }
+}
+buildMap();
+
 // Padló
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), new THREE.MeshPhongMaterial({ color: 0x444444 }));
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: 0x222222 }));
 floor.rotation.x = -Math.PI / 2;
 scene.add(floor);
-
-// Kocka (hogy legyen mit látni)
-const cube = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshPhongMaterial({ color: 0xff0000 }));
-cube.position.set(0, 1, -10);
-scene.add(cube);
 
 // Kontroller
 const controls = new PointerLockControls(camera, document.body);
 document.addEventListener('click', () => controls.lock());
-
-camera.position.set(0, 1.6, 0);
+camera.position.set(4, 1.6, 4);
 
 // Mozgás
 let move = { f: false, b: false, l: false, r: false };

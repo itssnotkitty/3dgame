@@ -9,13 +9,13 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Fények
 scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 const light = new THREE.DirectionalLight(0xffffff, 0.8);
 light.position.set(10, 20, 10);
 scene.add(light);
 
-// 1 = FAL, 0 = ÜRES ÚT
+// Falak tömbje
+const walls = [];
 const levelMap = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -25,7 +25,6 @@ const levelMap = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ];
 
-// Pálya építése
 function buildMap() {
     for (let i = 0; i < levelMap.length; i++) {
         for (let j = 0; j < levelMap[i].length; j++) {
@@ -36,23 +35,21 @@ function buildMap() {
                 );
                 wall.position.set(j * 2, 1, i * 2);
                 scene.add(wall);
+                walls.push(wall); // Hozzáadjuk a falat az ütközésvizsgáló listához
             }
         }
     }
 }
 buildMap();
 
-// Padló
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: 0x222222 }));
 floor.rotation.x = -Math.PI / 2;
 scene.add(floor);
 
-// Kontroller
 const controls = new PointerLockControls(camera, document.body);
 document.addEventListener('click', () => controls.lock());
 camera.position.set(4, 1.6, 4);
 
-// Mozgás
 let move = { f: false, b: false, l: false, r: false };
 document.addEventListener('keydown', (e) => {
     if(e.code === 'KeyW') move.f = true; if(e.code === 'KeyS') move.b = true;
@@ -63,6 +60,20 @@ document.addEventListener('keyup', (e) => {
     if(e.code === 'KeyA') move.l = false; if(e.code === 'KeyD') move.r = false;
 });
 
+// Ütközésvizsgálat: ha a kamera túl közel van egy falhoz, visszalökjük
+function checkCollisions() {
+    walls.forEach(wall => {
+        const dist = camera.position.distanceTo(wall.position);
+        if (dist < 1.5) { // 1.5 egységnyire van a fal
+            // Egyszerű "visszalökés":
+            if (move.f) controls.moveForward(-0.2);
+            if (move.b) controls.moveForward(0.2);
+            if (move.l) controls.moveRight(0.2);
+            if (move.r) controls.moveRight(-0.2);
+        }
+    });
+}
+
 function animate() {
     requestAnimationFrame(animate);
     if (controls.isLocked) {
@@ -70,6 +81,8 @@ function animate() {
         if(move.b) controls.moveForward(-0.1);
         if(move.l) controls.moveRight(-0.1);
         if(move.r) controls.moveRight(0.1);
+        
+        checkCollisions(); // Minden frame-ben ellenőrizzük az ütközést
     }
     renderer.render(scene, camera);
 }
